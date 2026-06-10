@@ -56,6 +56,8 @@ const emit = defineEmits<{
   replaceSql: [sql: string];
   executeSql: [sql: string];
   requestAutoExecuteSql: [sql: string];
+  insertRedisCommand: [command: string];
+  executeRedisCommand: [command: string];
   close: [];
 }>();
 
@@ -537,13 +539,25 @@ async function cancelStream() {
   }
 }
 
+function isRedisConnection(): boolean {
+  return props.connection?.db_type === "redis";
+}
+
 function applySql(code: string) {
-  emit("replaceSql", code);
+  if (isRedisConnection()) {
+    emit("insertRedisCommand", code);
+  } else {
+    emit("replaceSql", code);
+  }
 }
 
 function executeSql(code: string) {
-  emit("replaceSql", code);
-  emit("executeSql", code);
+  if (isRedisConnection()) {
+    emit("executeRedisCommand", code);
+  } else {
+    emit("replaceSql", code);
+    emit("executeSql", code);
+  }
 }
 
 const copiedIndex = ref("");
@@ -746,10 +760,15 @@ const messageRenderer = computed(() => {
                     <span>{{ seg.lang }}</span>
                     <span class="flex-1" />
                     <div class="flex items-center gap-1.5">
-                      <button v-if="seg.isSql" class="rounded p-0.5 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200" :title="t('ai.executeSql')" @click="executeSql(seg.content)">
+                      <button
+                        v-if="seg.isSql || isRedisConnection()"
+                        class="rounded p-0.5 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+                        :title="isRedisConnection() ? t('ai.executeSql') : t('ai.executeSql')"
+                        @click="executeSql(seg.content)"
+                      >
                         <Play class="h-3.5 w-3.5" />
                       </button>
-                      <button v-if="seg.isSql" class="rounded p-0.5 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200" :title="t('ai.apply')" @click="applySql(seg.content)">
+                      <button v-if="seg.isSql || isRedisConnection()" class="rounded p-0.5 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200" :title="t('ai.apply')" @click="applySql(seg.content)">
                         <Replace class="h-3.5 w-3.5" />
                       </button>
                       <button

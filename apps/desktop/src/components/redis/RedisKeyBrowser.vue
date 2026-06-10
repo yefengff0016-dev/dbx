@@ -826,7 +826,20 @@ watch(
   },
 );
 
-defineExpose({ focusSearch });
+async function insertCommand(command: string) {
+  await openCommandPanel();
+  commandText.value = command;
+  await nextTick();
+  getCommandInput()?.focus();
+}
+
+async function runCommand(command: string) {
+  await openCommandPanel();
+  commandText.value = "";
+  await runRedisCommand(command);
+}
+
+defineExpose({ focusSearch, insertCommand, runCommand });
 </script>
 
 <template>

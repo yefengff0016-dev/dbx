@@ -74,6 +74,8 @@ type DataGridHandle = {
 
 type SearchableBrowserHandle = {
   focusSearch: () => boolean;
+  insertCommand?: (command: string) => Promise<void>;
+  runCommand?: (command: string) => Promise<void>;
 };
 
 const props = defineProps<{
@@ -417,7 +419,19 @@ function handleModRTarget(target: Element): boolean {
   return false;
 }
 
-defineExpose({ focusSearch, refreshData, handleModRTarget });
+async function insertRedisCommand(command: string) {
+  if (props.activeTab.mode === "redis") {
+    await redisKeyBrowserRef.value?.insertCommand?.(command);
+  }
+}
+
+async function executeRedisCommand(command: string) {
+  if (props.activeTab.mode === "redis") {
+    await redisKeyBrowserRef.value?.runCommand?.(command);
+  }
+}
+
+defineExpose({ focusSearch, refreshData, handleModRTarget, insertRedisCommand, executeRedisCommand });
 </script>
 
 <template>

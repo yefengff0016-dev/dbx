@@ -710,6 +710,11 @@ function onAiExecuteSql(sql: string) {
 }
 
 function onAiRequestAutoExecuteSql(sql: string) {
+  if (activeConnection.value?.db_type === "redis") {
+    contentAreaRef.value?.executeRedisCommand(sql);
+    return;
+  }
+
   const tabId = ensureQueryTab();
   queryStore.updateSql(tabId, sql);
   selectedSql.value = "";
@@ -729,6 +734,14 @@ function onAiRequestAutoExecuteSql(sql: string) {
     pendingDangerSql.value = sql;
     showDangerDialog.value = true;
   });
+}
+
+function onAiInsertRedisCommand(command: string) {
+  contentAreaRef.value?.insertRedisCommand(command);
+}
+
+function onAiExecuteRedisCommand(command: string) {
+  contentAreaRef.value?.executeRedisCommand(command);
 }
 
 function handleKeydown(e: KeyboardEvent) {
@@ -1104,7 +1117,18 @@ onUnmounted(() => {
           <div v-if="showAiPanel" :class="isClassicLayout ? 'h-full shrink-0 relative z-30 isolate bg-background' : 'h-full shrink-0 relative z-30 isolate rounded-md border border-border/80 bg-background'" :style="{ width: aiPanelWidth + 'px' }">
             <div class="panel-resize-handle panel-resize-handle--left" @mousedown="startAiPanelResize" />
             <div class="h-full min-h-0 overflow-hidden">
-              <AiAssistant v-if="aiPanelReady" ref="aiAssistantRef" :tab="activeTab" :connection="activeConnection" @replace-sql="onAiReplaceSql" @execute-sql="onAiExecuteSql" @request-auto-execute-sql="onAiRequestAutoExecuteSql" @close="toggleAiPanel" />
+              <AiAssistant
+                v-if="aiPanelReady"
+                ref="aiAssistantRef"
+                :tab="activeTab"
+                :connection="activeConnection"
+                @replace-sql="onAiReplaceSql"
+                @execute-sql="onAiExecuteSql"
+                @request-auto-execute-sql="onAiRequestAutoExecuteSql"
+                @insert-redis-command="onAiInsertRedisCommand"
+                @execute-redis-command="onAiExecuteRedisCommand"
+                @close="toggleAiPanel"
+              />
             </div>
           </div>
 
