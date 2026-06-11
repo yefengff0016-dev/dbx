@@ -1337,7 +1337,7 @@ onMounted(async () => {
   if (!editorRef.value) return;
 
   const [
-    { EditorView, keymap, rectangularSelection, hoverTooltip, showTooltip, Decoration, tooltips, lineNumbers, highlightActiveLineGutter, highlightSpecialChars, dropCursor, crosshairCursor, ViewPlugin, layer, RectangleMarker },
+    { EditorView, keymap, rectangularSelection, hoverTooltip, showTooltip, Decoration, tooltips, lineNumbers, highlightActiveLineGutter, highlightSpecialChars, dropCursor, crosshairCursor, ViewPlugin },
     { EditorState, Compartment, Prec, StateEffect, StateField },
     { sql, MSSQL, MySQL, PostgreSQL, SQLDialect },
     { autocompletion, startCompletion, acceptCompletion, closeBrackets, closeBracketsKeymap, snippetCompletion, completionStatus, completionKeymap },
@@ -1361,32 +1361,6 @@ onMounted(async () => {
   codeMirrorStartCompletion = startCompletion;
   codeMirrorIndentMore = indentMore;
   codeMirrorInsertNewlineKeepIndent = insertNewlineKeepIndent;
-
-  function cursorLayerOnly() {
-    const cursorL = layer({
-      above: true,
-      markers(view) {
-        const cursors: InstanceType<typeof RectangleMarker>[] = [];
-        for (const r of view.state.selection.ranges) {
-          const prim = r === view.state.selection.main;
-          if (r.empty) {
-            const className = prim ? "cm-cursor cm-cursor-primary" : "cm-cursor cm-cursor-secondary";
-            for (const piece of RectangleMarker.forRange(view, className, r)) cursors.push(piece);
-          }
-        }
-        return cursors;
-      },
-      update(update, dom) {
-        if (update.transactions.some((tr) => tr.selection)) dom.style.animationName = dom.style.animationName === "cm-blink" ? "cm-blink2" : "cm-blink";
-        return update.docChanged || update.selectionSet;
-      },
-      mount(dom) {
-        dom.style.animationDuration = "1200ms";
-      },
-      class: "cm-cursorLayer",
-    });
-    return [cursorL];
-  }
 
   const diagnosticTheme = EditorView.baseTheme({
     ".cm-sql-error": {
@@ -1515,8 +1489,6 @@ onMounted(async () => {
       highlightSpecialChars(),
       history(),
       foldGutter(),
-      cursorLayerOnly(),
-      // selectionMatchOccurrences(): Disabled - causes selection lag due to full-document search on every selection change
       dropCursor(),
       EditorState.allowMultipleSelections.of(true),
       indentOnInput(),

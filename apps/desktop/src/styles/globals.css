@@ -276,14 +276,20 @@ body.dbx-table-reference-dragging * {
 }
 
 /* CodeMirror: use native browser selection for responsive drag-select */
+/* Hide CodeMirror JS-drawn selection/cursor layers - they call coordsAtPos() causing layout thrashing */
 .cm-editor .cm-selectionLayer {
   display: none !important;
 }
+.cm-editor .cm-cursorLayer {
+  display: none !important;
+}
+/* Ensure native selection is visible */
 .cm-editor .cm-line ::selection,
 .cm-editor .cm-line::selection {
   background-color: highlight !important;
   color: highlighttext !important;
 }
+/* Native caret - use CSS variable for theme-aware color */
 .cm-editor .cm-content {
   caret-color: var(--dbx-editor-caret, #528bff) !important;
 }
