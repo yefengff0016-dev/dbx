@@ -32,8 +32,7 @@ import {
 import { EDITOR_FONT_FAMILY_CSS_VAR, EDITOR_FONT_SIZE_CSS_VAR, loadEditorTheme, editorFontTheme, sqlCompletionTheme } from "@/lib/editorThemes";
 import { clampEditorFontSize, createEditorZoomCommitScheduler, fontSizeFromGestureScale, fontSizeFromWheelDelta } from "@/lib/editorZoom";
 import { shortcutToCodeMirrorKey } from "@/lib/shortcutRegistry";
-
-import { selectionMatchOccurrences } from "@/lib/codemirrorSelectionMatches";
+// import { selectionMatchOccurrences } from "@/lib/codemirrorSelectionMatches"; // Disabled: causes selection lag
 import { isSchemaAware, isSingleDatabase } from "@/lib/databaseFeatureSupport";
 import * as api from "@/lib/api";
 import { areSqlSemanticDiagnosticsEqual, buildSqlParserErrorDiagnostic, buildSqlSemanticDiagnostics, shouldRunSqlSemanticDiagnostics, type SqlSemanticDiagnostic } from "@/lib/sqlSemanticDiagnostics";
@@ -1517,7 +1516,7 @@ onMounted(async () => {
       history(),
       foldGutter(),
       cursorLayerOnly(),
-      selectionMatchOccurrences(),
+      // selectionMatchOccurrences(): Disabled - causes selection lag due to full-document search on every selection change
       dropCursor(),
       EditorState.allowMultipleSelections.of(true),
       indentOnInput(),
