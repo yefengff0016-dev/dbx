@@ -280,7 +280,6 @@ export function buildEditorFontThemeRules(opts?: { fixedHeight?: boolean; scroll
     "&": {
       ...(opts?.fixedHeight ? { height: "100%" } : {}),
       fontSize: `var(${EDITOR_FONT_SIZE_CSS_VAR}, ${defaults?.size ?? 13}px)`,
-      backgroundColor: "var(--background)",
     },
     ...(opts?.scrollable ? { ".cm-scroller": { overflow: "auto" } } : {}),
     ".cm-content": {
@@ -301,7 +300,6 @@ export function buildEditorFontThemeRules(opts?: { fixedHeight?: boolean; scroll
       fontFamily: `var(${EDITOR_FONT_FAMILY_CSS_VAR}, ${defaults?.family ?? "monospace"})`,
       position: "relative",
       userSelect: "none",
-      backgroundColor: "var(--background) !important",
     },
     ".cm-gutters:after": {
       background: "var(--border)",

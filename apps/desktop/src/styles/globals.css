@@ -275,6 +275,36 @@ body.dbx-table-reference-dragging * {
   font-family: var(--dbx-editor-font-family, var(--font-mono, monospace));
 }
 
+/* CodeMirror: use native browser selection for responsive drag-select */
+.cm-editor .cm-selectionLayer {
+  display: none !important;
+}
+.cm-editor .cm-line ::selection,
+.cm-editor .cm-line::selection {
+  background-color: highlight !important;
+  color: highlighttext !important;
+}
+.cm-editor .cm-content {
+  caret-color: var(--dbx-editor-caret, #528bff) !important;
+}
+.cm-editor .cm-line {
+  caret-color: var(--dbx-editor-caret, #528bff) !important;
+}
+
+/* CodeMirror: editor and gutter background match app theme */
+.cm-editor {
+  background-color: var(--background) !important;
+}
+.cm-editor .cm-gutters {
+  background-color: var(--background) !important;
+}
+.cm-editor .cm-activeLineGutter {
+  background-color: var(--accent) !important;
+}
+.cm-editor .cm-activeLine {
+  background-color: var(--accent) !important;
+}
+
 /* Splitpanes */
 .splitpanes--horizontal .splitpanes__pane {
   transition: none !important;

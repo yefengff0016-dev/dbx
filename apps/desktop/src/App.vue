@@ -745,15 +745,23 @@ function onAiRequestAutoExecuteSql(sql: string) {
   });
 }
 
+async function waitForRedisBrowser(timeout = 3000): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    await nextTick();
+    if (contentAreaRef.value?.isRedisReady?.()) return;
+  }
+}
+
 async function onAiInsertRedisCommand(command: string) {
   ensureRedisTab();
-  await nextTick();
+  await waitForRedisBrowser();
   contentAreaRef.value?.insertRedisCommand(command);
 }
 
 async function onAiExecuteRedisCommand(command: string) {
   const tabId = ensureRedisTab();
-  await nextTick();
+  await waitForRedisBrowser();
   const result = await contentAreaRef.value?.executeRedisCommand(command);
   const tab = queryStore.tabs.find((t) => t.id === tabId);
   if (tab && result) {
@@ -767,7 +775,7 @@ async function onAiExecuteRedisCommand(command: string) {
 
 async function onAiRequestAutoExecuteRedis(sql: string) {
   const tabId = ensureRedisTab();
-  await nextTick();
+  await waitForRedisBrowser();
   const result = await contentAreaRef.value?.executeRedisCommand(sql);
   const tab = queryStore.tabs.find((t) => t.id === tabId);
   if (tab && result) {

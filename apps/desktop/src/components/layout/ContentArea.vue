@@ -434,7 +434,11 @@ async function executeRedisCommand(command: string): Promise<RedisCommandResult 
   return undefined;
 }
 
-defineExpose({ focusSearch, refreshData, handleModRTarget, insertRedisCommand, executeRedisCommand });
+function isRedisReady(): boolean {
+  return !!redisKeyBrowserRef.value;
+}
+
+defineExpose({ focusSearch, refreshData, handleModRTarget, insertRedisCommand, executeRedisCommand, isRedisReady });
 </script>
 
 <template>
