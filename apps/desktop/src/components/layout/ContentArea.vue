@@ -72,10 +72,12 @@ type DataGridHandle = {
   setMultiRowTranspose: (value: boolean) => void;
 };
 
+type RedisCommandResult = { output: string; error: boolean };
+
 type SearchableBrowserHandle = {
   focusSearch: () => boolean;
   insertCommand?: (command: string) => Promise<void>;
-  runCommand?: (command: string) => Promise<void>;
+  runCommand?: (command: string) => Promise<RedisCommandResult>;
 };
 
 const props = defineProps<{
@@ -425,10 +427,11 @@ async function insertRedisCommand(command: string) {
   }
 }
 
-async function executeRedisCommand(command: string) {
+async function executeRedisCommand(command: string): Promise<RedisCommandResult | undefined> {
   if (props.activeTab.mode === "redis") {
-    await redisKeyBrowserRef.value?.runCommand?.(command);
+    return await redisKeyBrowserRef.value?.runCommand?.(command);
   }
+  return undefined;
 }
 
 defineExpose({ focusSearch, refreshData, handleModRTarget, insertRedisCommand, executeRedisCommand });

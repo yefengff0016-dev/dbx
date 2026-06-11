@@ -697,6 +697,15 @@ function ensureQueryTab(): string {
   return queryStore.createTab(connId, db, undefined, "query");
 }
 
+function ensureRedisTab(): string {
+  const tab = activeTab.value;
+  if (tab && tab.mode === "redis") return tab.id;
+  const connId = activeConnection.value?.id || connectionStore.activeConnectionId || connectionStore.connections[0]?.id || "";
+  const config = connectionStore.getConfig(connId);
+  const db = tab?.connectionId === connId ? tab.database : config?.database || "0";
+  return queryStore.createTab(connId, db, undefined, "redis");
+}
+
 function onAiReplaceSql(sql: string) {
   const tabId = ensureQueryTab();
   queryStore.updateSql(tabId, sql);
@@ -711,7 +720,7 @@ function onAiExecuteSql(sql: string) {
 
 function onAiRequestAutoExecuteSql(sql: string) {
   if (activeConnection.value?.db_type === "redis") {
-    contentAreaRef.value?.executeRedisCommand(sql);
+    void onAiRequestAutoExecuteRedis(sql);
     return;
   }
 
@@ -736,12 +745,38 @@ function onAiRequestAutoExecuteSql(sql: string) {
   });
 }
 
-function onAiInsertRedisCommand(command: string) {
+async function onAiInsertRedisCommand(command: string) {
+  ensureRedisTab();
+  await nextTick();
   contentAreaRef.value?.insertRedisCommand(command);
 }
 
-function onAiExecuteRedisCommand(command: string) {
-  contentAreaRef.value?.executeRedisCommand(command);
+async function onAiExecuteRedisCommand(command: string) {
+  const tabId = ensureRedisTab();
+  await nextTick();
+  const result = await contentAreaRef.value?.executeRedisCommand(command);
+  const tab = queryStore.tabs.find((t) => t.id === tabId);
+  if (tab && result) {
+    if (result.error) {
+      tab.result = { columns: ["Error"], rows: [[result.output]], affected_rows: 0, execution_time_ms: 0 };
+    } else {
+      tab.result = { columns: ["Result"], rows: [[result.output]], affected_rows: 0, execution_time_ms: 0 };
+    }
+  }
+}
+
+async function onAiRequestAutoExecuteRedis(sql: string) {
+  const tabId = ensureRedisTab();
+  await nextTick();
+  const result = await contentAreaRef.value?.executeRedisCommand(sql);
+  const tab = queryStore.tabs.find((t) => t.id === tabId);
+  if (tab && result) {
+    if (result.error) {
+      tab.result = { columns: ["Error"], rows: [[result.output]], affected_rows: 0, execution_time_ms: 0 };
+    } else {
+      tab.result = { columns: ["Result"], rows: [[result.output]], affected_rows: 0, execution_time_ms: 0 };
+    }
+  }
 }
 
 function handleKeydown(e: KeyboardEvent) {

@@ -9,7 +9,6 @@ type LucideIconNode = Array<[string, Record<string, string>]>;
 
 export const EDITOR_FONT_SIZE_CSS_VAR = "--dbx-editor-font-size";
 export const EDITOR_FONT_FAMILY_CSS_VAR = "--dbx-editor-font-family";
-const EDITOR_SELECTION_BACKGROUND_CSS_VAR = "--dbx-editor-selection-background";
 
 const SUPPORTS_COLOR_MIX = typeof CSS !== "undefined" && typeof CSS.supports === "function" && CSS.supports("color", "color-mix(in oklch, black 50%, white)");
 const SUPPORTS_OKLCH = typeof CSS !== "undefined" && typeof CSS.supports === "function" && CSS.supports("color", "oklch(0.62 0.19 255)");
@@ -73,7 +72,6 @@ function createCustomTheme(EditorView: typeof import("@codemirror/view").EditorV
       "&": {
         backgroundColor: c.background,
         color: c.foreground,
-        [EDITOR_SELECTION_BACKGROUND_CSS_VAR]: c.selection,
       },
       ".cm-content": {
         caretColor: c.cursor,
@@ -282,6 +280,7 @@ export function buildEditorFontThemeRules(opts?: { fixedHeight?: boolean; scroll
     "&": {
       ...(opts?.fixedHeight ? { height: "100%" } : {}),
       fontSize: `var(${EDITOR_FONT_SIZE_CSS_VAR}, ${defaults?.size ?? 13}px)`,
+      backgroundColor: "var(--background)",
     },
     ...(opts?.scrollable ? { ".cm-scroller": { overflow: "auto" } } : {}),
     ".cm-content": {
@@ -292,28 +291,9 @@ export function buildEditorFontThemeRules(opts?: { fixedHeight?: boolean; scroll
     ".cm-line": {
       padding: "0 2px !important",
     },
-    ".cm-selectionLayer .cm-selectionBackground": {
-      display: "none",
-    },
     ".cm-cursor": {
       height: "1.6em !important",
       transform: "translateY(-0.3em)",
-    },
-    ".cm-trimmedSelection": {
-      backgroundColor: `var(${EDITOR_SELECTION_BACKGROUND_CSS_VAR}, rgb(148 163 184 / 38%))`,
-      borderRadius: "0",
-    },
-    ".cm-trimmedSelection-topLeft": {
-      borderTopLeftRadius: "3px",
-    },
-    ".cm-trimmedSelection-topRight": {
-      borderTopRightRadius: "3px",
-    },
-    ".cm-trimmedSelection-bottomLeft": {
-      borderBottomLeftRadius: "3px",
-    },
-    ".cm-trimmedSelection-bottomRight": {
-      borderBottomRightRadius: "3px",
     },
     ".cm-gutters": {
       borderRight: "0 !important",
@@ -321,9 +301,10 @@ export function buildEditorFontThemeRules(opts?: { fixedHeight?: boolean; scroll
       fontFamily: `var(${EDITOR_FONT_FAMILY_CSS_VAR}, ${defaults?.family ?? "monospace"})`,
       position: "relative",
       userSelect: "none",
+      backgroundColor: "var(--background) !important",
     },
     ".cm-gutters:after": {
-      background: "rgba(148, 163, 184, 0.38)",
+      background: "var(--border)",
       bottom: "0",
       content: "''",
       pointerEvents: "none",

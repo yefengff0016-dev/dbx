@@ -388,23 +388,24 @@ function appendCommandHistory(entry: Omit<RedisCommandHistoryEntry, "id">) {
   scrollCommandTerminalToEnd();
 }
 
-async function runRedisCommand(command: string) {
+async function runRedisCommand(command: string): Promise<{ output: string; error: boolean }> {
   const prompt = commandPrompt.value;
   commandRunning.value = true;
   try {
     const result = await api.redisExecuteCommand(props.connectionId, commandDb.value, command);
+    const output = formatRedisCommandResult(result.value);
     appendCommandHistory({
       prompt,
       command,
-      output: formatRedisCommandResult(result.value),
+      output,
       error: false,
     });
     commandDb.value = nextRedisCommandDb(commandDb.value, command, result.value);
     if (result.safety === "confirm") {
       await loadKeys();
     }
-    // Persist to history
     persistRedisHistory(command, true, result.value);
+    return { output, error: false };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     appendCommandHistory({
@@ -413,8 +414,8 @@ async function runRedisCommand(command: string) {
       output: errorMessage,
       error: true,
     });
-    // Persist failed command too
     persistRedisHistory(command, false, null, errorMessage);
+    return { output: errorMessage, error: true };
   } finally {
     commandRunning.value = false;
     scrollCommandTerminalToEnd();
@@ -446,6 +447,12 @@ function persistRedisHistory(command: string, success: boolean, resultValue?: un
 async function openCommandPanel() {
   activeSidePanel.value = "command";
   await nextTick();
+  getCommandInput()?.focus();
+}
+
+function handleCommandPanelClick() {
+  const selection = window.getSelection();
+  if (selection && selection.type === "Range") return;
   getCommandInput()?.focus();
 }
 
@@ -833,10 +840,10 @@ async function insertCommand(command: string) {
   getCommandInput()?.focus();
 }
 
-async function runCommand(command: string) {
+async function runCommand(command: string): Promise<{ output: string; error: boolean }> {
   await openCommandPanel();
   commandText.value = "";
-  await runRedisCommand(command);
+  return await runRedisCommand(command);
 }
 
 defineExpose({ focusSearch, insertCommand, runCommand });
@@ -958,7 +965,7 @@ defineExpose({ focusSearch, insertCommand, runCommand });
             </TabsContent>
 
             <TabsContent value="command" class="m-0 min-h-0 flex-1 flex flex-col">
-              <div class="dbx-editor-font-family relative flex min-h-0 flex-1 flex-col bg-[#171b21] text-[13px] leading-5 text-slate-200" @click="getCommandInput()?.focus()">
+              <div class="dbx-editor-font-family relative flex min-h-0 flex-1 flex-col bg-[#171b21] text-[13px] leading-5 text-slate-200" @click="handleCommandPanelClick">
                 <div ref="commandTerminalRef" class="min-h-0 flex-1 overflow-auto px-4 pb-3 pt-4">
                   <div class="mb-4 text-slate-400">
                     <span class="text-slate-200">{{ t("redis.commandWelcome") }}</span>
